@@ -2,7 +2,7 @@
 /**
  * Extentions class
  * 
- * @package Arraytics\Tools
+ * @package Arraytics\PluginUtilityManager
  */
 namespace Arraytics\Tools;
 
@@ -35,7 +35,7 @@ class PluginManager {
 
         return false;
     }
-
+    
     /**
      * Check if a plugin is active.
      *
@@ -166,4 +166,3 @@ class PluginManager {
         return null;
     }
 }
-
