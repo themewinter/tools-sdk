@@ -17,7 +17,7 @@ class Extension {
      *
      * @var string
      */
-    protected static string $option_name = 'plugin_utility_extensions';
+    protected static string $option_name = 'extensions';
 
     /**
      * List of registered extensions.
@@ -70,6 +70,12 @@ class Extension {
                 if (!PluginManager::is_installed($slug)) {
                     $extension['status'] = 'upgrade';
                 } elseif (!PluginManager::is_activated($slug)) {
+                    $extension['status'] = 'install';
+                } else {
+                    $extension['status'] = 'activate';
+                }
+            } elseif ( $extension['type'] === 'arraytics-plugin' ) {
+                if (!PluginManager::is_activated($slug)) {
                     $extension['status'] = 'install';
                 } else {
                     $extension['status'] = 'activate';
@@ -171,6 +177,17 @@ class Extension {
     public static function get_modules(): array {
         return array_filter(self::get(), function($e) {
             return $e['type'] === 'module';
+        });
+    }
+
+    /**
+     * Get all extensions of type "module".
+     *
+     * @return array
+     */
+    public static function get_our_plugins(): array {
+        return array_filter(self::get(), function($e) {
+            return $e['type'] === 'arraytics-plugin';
         });
     }
 }
