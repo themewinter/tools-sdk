@@ -190,4 +190,51 @@ class Extension {
             return $e['type'] === 'arraytics-plugin';
         });
     }
+
+    /**
+     * Get all extensions of type "module".
+     *
+     * @return array
+     */
+    public function get_submodule( $module ): array {
+        return array_filter(self::get(), function ($extension) use ($module) {
+            return isset($extension['parent']) && $extension['parent'] === $module;
+        });
+    }
+
+    /**
+     * Check whether a module or submodule is enabled.
+     *
+     * Conditions:
+     * - If the module has no parent and status === 'on' → true
+     * - If the module has a parent, and both the parent and the module have status === 'on'  true
+     * - Else → false
+     *
+     * @param string $key The extension key (module or submodule).
+     *
+     * @return bool
+     */
+    public function is_enabled(string $key): bool {
+        $extensions = $this->get();
+
+        // Not registered
+        if (!isset($extensions[$key])) {
+            return false;
+        }
+
+        $extension = $extensions[$key];
+        $status = $extension['status'] ?? 'off';
+
+        // No parent: return true only if status === 'on'
+        if (empty($extension['parent'])) {
+            return $status === 'on';
+        }
+
+        // Has parent: check both own status and parent's
+        $parent_key = $extension['parent'];
+
+        $parent_status = $extensions[$parent_key]['status'] ?? 'off';
+
+        return $status === 'on' && $parent_status === 'on';
+    }
 }
