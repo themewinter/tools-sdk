@@ -1,15 +1,15 @@
 {
-    "name": "arraytics/tools",
+    "name": "arraytics/tools-sdk",
     "description": "A PHP package for tools.",
     "type": "library",
     "autoload": {
         "psr-4": {
-            "Arraytics\\Tools\\": "src/"
+            "Arraytics\\ToolsSdk\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Arraytics\\Tools\\Tests\\": "tests/"
+            "Arraytics\\ToolsSdk\\Tests\\": "tests/"
         }
     },
     "require": {

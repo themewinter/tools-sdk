@@ -2,9 +2,9 @@
 /**
  * Extensions class for managing modules, addons, and plugins.
  *
- * @package Arraytics\PluginUtilitysManager
+ * @package Arraytics\ToolsSdk
  */
-namespace Arraytics\Tools;
+namespace Arraytics\ToolsSdk;
 
 /**
  * Class Extension
@@ -17,14 +17,14 @@ class Extension {
      *
      * @var string
      */
-    protected static string $option_name = 'extensions';
+    protected string $option_name = 'extensions';
 
     /**
      * List of registered extensions.
      *
      * @var array
      */
-    protected static array $extensions = [];
+    protected array $extensions = [];
 
     /**
      * Boot the extension system with provided option name and extensions list.
@@ -34,9 +34,9 @@ class Extension {
      *
      * @return void
      */
-    public static function boot(string $option_name, array $extensions): void {
-        self::$option_name = $option_name;
-        self::$extensions = apply_filters('plugin_utility_manager/extensions', $extensions);
+    public function __construct(string $option_name, array $extensions) {
+        $this->option_name = $option_name;
+        $this->extensions = apply_filters('plugin_utility_manager/extensions', $extensions);
     }
 
     /**
@@ -44,11 +44,11 @@ class Extension {
      *
      * @return array
      */
-    public static function get(): array {
-        $settings = get_option(self::$option_name, []);
+    public function get(): array {
+        $settings = get_option($this->option_name, []);
         $resolved = [];
 
-        foreach (self::$extensions as $key => $extension) {
+        foreach ($this->extensions as $key => $extension) {
             $status = $settings[$key] ?? $extension['status'];
             $extension['status'] = $status;
 
@@ -96,15 +96,15 @@ class Extension {
      *
      * @return bool True if update successful, false otherwise.
      */
-    public static function update(string $key, string $status): bool {
-        if (!isset(self::$extensions[$key])) {
+    public function update(string $key, string $status): bool {
+        if (!isset($this->extensions[$key])) {
             return false;
         }
 
-        $settings = get_option(self::$option_name, []);
+        $settings = get_option($this->option_name, []);
         $settings[$key] = $status === 'on' ? 'on' : 'off';
 
-        return update_option(self::$option_name, $settings);
+        return update_option($this->option_name, $settings);
     }
 
     /**
@@ -112,7 +112,7 @@ class Extension {
      *
      * @return array
      */
-    public static function enabled(): array {
+    public function enabled(): array {
         return array_filter(self::get(), function($ext) {
             return $ext['status'] === 'on';
         });
@@ -125,8 +125,8 @@ class Extension {
      *
      * @return array|null The extension data or null if not found.
      */
-    public static function find(string $key): ?array {
-        return self::$extensions[$key] ?? null;
+    public function find(string $key): ?array {
+        return $this->extensions[$key] ?? null;
     }
 
     /**
@@ -134,8 +134,8 @@ class Extension {
      *
      * @return string
      */
-    public static function get_option_name(): string {
-        return self::$option_name;
+    public function get_option_name(): string {
+        return $this->option_name;
     }
 
     /**
@@ -143,8 +143,8 @@ class Extension {
      *
      * @return array
      */
-    public static function get_extensions(): array {
-        return self::$extensions;
+    public function get_extensions(): array {
+        return $this->extensions;
     }
 
     /**
@@ -152,7 +152,7 @@ class Extension {
      *
      * @return array
      */
-    public static function get_plugins(): array {
+    public function get_plugins(): array {
         return array_filter(self::get(), function($e) {
             return $e['type'] === 'plugin';
         });
@@ -163,7 +163,7 @@ class Extension {
      *
      * @return array
      */
-    public static function get_addons(): array {
+    public function get_addons(): array {
         return array_filter(self::get(), function($e) {
             return $e['type'] === 'addon';
         });
@@ -174,7 +174,7 @@ class Extension {
      *
      * @return array
      */
-    public static function get_modules(): array {
+    public function get_modules(): array {
         return array_filter(self::get(), function($e) {
             return $e['type'] === 'module';
         });
@@ -185,7 +185,7 @@ class Extension {
      *
      * @return array
      */
-    public static function get_our_plugins(): array {
+    public function get_our_plugins(): array {
         return array_filter(self::get(), function($e) {
             return $e['type'] === 'arraytics-plugin';
         });

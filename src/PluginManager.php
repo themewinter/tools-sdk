@@ -2,9 +2,9 @@
 /**
  * Extentions class
  * 
- * @package Arraytics\PluginUtilityManager
+ * @package Arraytics\ToolsSdk
  */
-namespace Arraytics\Tools;
+namespace Arraytics\ToolsSdk;
 
 /**
  * Plugin manager
