@@ -17,24 +17,22 @@ class Extension {
      *
      * @var string
      */
-    protected string $option_name = 'extensions';
+    protected $option_name = 'extensions';
 
     /**
      * List of registered extensions.
      *
      * @var array
      */
-    protected array $extensions = [];
+    protected $extensions = [];
 
     /**
      * Boot the extension system with provided option name and extensions list.
      *
      * @param string $option_name The option key used to save extension settings.
      * @param array  $extensions  List of available extensions.
-     *
-     * @return void
      */
-    public function __construct(string $option_name, array $extensions) {
+    public function __construct($option_name, $extensions) {
         $this->option_name = $option_name;
         $this->extensions = apply_filters('plugin_utility_manager/extensions', $extensions);
     }
@@ -44,17 +42,16 @@ class Extension {
      *
      * @return array
      */
-    public function get(): array {
+    public function get() {
         $settings = get_option($this->option_name, []);
         $resolved = [];
 
         foreach ($this->extensions as $key => $extension) {
-            $status = $settings[$key] ?? $extension['status'];
+            $status = isset($settings[$key]) ? $settings[$key] : $extension['status'];
             $extension['status'] = $status;
 
-            // Resolve plugin state
-            $slug = $extension['slug'] ?? '';
-            $deps = $extension['deps'] ?? [];
+            $slug = isset($extension['slug']) ? $extension['slug'] : '';
+            $deps = isset($extension['deps']) ? $extension['deps'] : [];
 
             if ($extension['type'] === 'module' && !empty($deps)) {
                 $dep = $deps[0];
@@ -74,7 +71,7 @@ class Extension {
                 } else {
                     $extension['status'] = 'activate';
                 }
-            } elseif ( $extension['type'] === 'arraytics-plugin' ) {
+            } elseif ($extension['type'] === 'arraytics-plugin') {
                 if (!PluginManager::is_activated($slug)) {
                     $extension['status'] = 'install';
                 } else {
@@ -93,10 +90,9 @@ class Extension {
      *
      * @param string $key    The extension key.
      * @param string $status The status to set ('on' or 'off').
-     *
      * @return bool True if update successful, false otherwise.
      */
-    public function update(string $key, string $status): bool {
+    public function update($key, $status) {
         if (!isset($this->extensions[$key])) {
             return false;
         }
@@ -112,8 +108,8 @@ class Extension {
      *
      * @return array
      */
-    public function enabled(): array {
-        return array_filter(self::get(), function($ext) {
+    public function enabled() {
+        return array_filter($this->get(), function ($ext) {
             return $ext['status'] === 'on';
         });
     }
@@ -122,11 +118,10 @@ class Extension {
      * Find an extension by its key.
      *
      * @param string $key The extension key.
-     *
-     * @return array|null The extension data or null if not found.
+     * @return array|null
      */
-    public function find(string $key): ?array {
-        return $this->extensions[$key] ?? null;
+    public function find($key) {
+        return isset($this->extensions[$key]) ? $this->extensions[$key] : null;
     }
 
     /**
@@ -134,7 +129,7 @@ class Extension {
      *
      * @return string
      */
-    public function get_option_name(): string {
+    public function get_option_name() {
         return $this->option_name;
     }
 
@@ -143,7 +138,7 @@ class Extension {
      *
      * @return array
      */
-    public function get_extensions(): array {
+    public function get_extensions() {
         return $this->extensions;
     }
 
@@ -152,8 +147,8 @@ class Extension {
      *
      * @return array
      */
-    public function get_plugins(): array {
-        return array_filter(self::get(), function($e) {
+    public function get_plugins() {
+        return array_filter($this->get(), function ($e) {
             return $e['type'] === 'plugin';
         });
     }
@@ -163,8 +158,8 @@ class Extension {
      *
      * @return array
      */
-    public function get_addons(): array {
-        return array_filter(self::get(), function($e) {
+    public function get_addons() {
+        return array_filter($this->get(), function ($e) {
             return $e['type'] === 'addon';
         });
     }
@@ -174,30 +169,31 @@ class Extension {
      *
      * @return array
      */
-    public function get_modules(): array {
-        return array_filter(self::get(), function($e) {
+    public function get_modules() {
+        return array_filter($this->get(), function ($e) {
             return $e['type'] === 'module';
         });
     }
 
     /**
-     * Get all extensions of type "module".
+     * Get all extensions of type "arraytics-plugin".
      *
      * @return array
      */
-    public function get_our_plugins(): array {
-        return array_filter(self::get(), function($e) {
+    public function get_our_plugins() {
+        return array_filter($this->get(), function ($e) {
             return $e['type'] === 'arraytics-plugin';
         });
     }
 
     /**
-     * Get all extensions of type "module".
+     * Get all submodules of a given module.
      *
+     * @param string $module
      * @return array
      */
-    public function get_submodule( $module ): array {
-        return array_filter(self::get(), function ($extension) use ($module) {
+    public function get_submodule($module) {
+        return array_filter($this->get(), function ($extension) use ($module) {
             return isset($extension['parent']) && $extension['parent'] === $module;
         });
     }
@@ -205,35 +201,25 @@ class Extension {
     /**
      * Check whether a module or submodule is enabled.
      *
-     * Conditions:
-     * - If the module has no parent and status === 'on' → true
-     * - If the module has a parent, and both the parent and the module have status === 'on'  true
-     * - Else → false
-     *
      * @param string $key The extension key (module or submodule).
-     *
      * @return bool
      */
-    public function is_enabled(string $key): bool {
+    public function is_enabled($key) {
         $extensions = $this->get();
 
-        // Not registered
         if (!isset($extensions[$key])) {
             return false;
         }
 
         $extension = $extensions[$key];
-        $status = $extension['status'] ?? 'off';
+        $status = isset($extension['status']) ? $extension['status'] : 'off';
 
-        // No parent: return true only if status === 'on'
         if (empty($extension['parent'])) {
             return $status === 'on';
         }
 
-        // Has parent: check both own status and parent's
         $parent_key = $extension['parent'];
-
-        $parent_status = $extensions[$parent_key]['status'] ?? 'off';
+        $parent_status = isset($extensions[$parent_key]['status']) ? $extensions[$parent_key]['status'] : 'off';
 
         return $status === 'on' && $parent_status === 'on';
     }
