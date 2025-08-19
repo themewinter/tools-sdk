@@ -125,6 +125,16 @@ class Extension {
     }
 
     /**
+     * Find the parent of a given extension.
+     *
+     * @param string $key The extension key.
+     * @return array|null
+     */
+    public function find_parent($key) {
+        return isset($this->extensions[$key]['parent']) ? $this->extensions[$key]['parent'] : null;
+    }
+
+    /**
      * Get the current option name used for storing extension settings.
      *
      * @return string
