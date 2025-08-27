@@ -50,6 +50,14 @@ class Extension {
             $status = isset($settings[$key]) ? $settings[$key] : $extension['status'];
             $extension['status'] = $status;
 
+            $parent_key = isset($extension['parent']) ? $extension['parent'] : '';
+
+            if ( ! empty( $parent_key ) ) {
+                $parent_status = isset($settings[$parent_key]) ? $settings[$parent_key] : $this->extensions[$parent_key]['status'];
+                
+                $extension['status'] = $status === 'on' && $parent_status === 'on' ? 'on' : 'off';
+            }
+
             $slug = isset($extension['slug']) ? $extension['slug'] : '';
             $deps = isset($extension['deps']) ? $extension['deps'] : [];
 
