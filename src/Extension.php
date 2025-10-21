@@ -73,11 +73,11 @@ class Extension {
                 }
             } elseif (in_array($extension['type'], ['plugin', 'addon'])) {
                 if (!PluginManager::is_installed($slug)) {
-                    $extension['status'] = 'upgrade';
-                } elseif (!PluginManager::is_activated($slug)) {
                     $extension['status'] = 'install';
-                } else {
+                } elseif (!PluginManager::is_activated($slug)) {
                     $extension['status'] = 'activate';
+                } else {
+                    $extension['status'] = 'deactivate';
                 }
             } elseif ($extension['type'] === 'arraytics-plugin') {
                 if (!PluginManager::is_activated($slug)) {
